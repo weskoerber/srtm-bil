@@ -9,7 +9,7 @@
 
 typedef struct {
   const char *const key;
-  bool (*const parse)(header *const);
+  bool (*const parse)(slice *, header *const);
 } header_proc_map;
 
 typedef struct {
@@ -52,11 +52,19 @@ const header_fields header_fields_ = {
 
 const header *const header_parse(const char *data);
 
-bool header_parse_nrows(header *header);
+uint32_t header_parse_uint32(slice *data);
+int32_t header_parse_int32(slice *data);
+double header_parse_double(slice *data);
+
+bool header_parse_byteorder(slice *data, header *header);
+bool header_parse_nrows(slice *data, header *header);
 
 const header_proc_map header_proc_map_[] = {
-  {header_fields_.nrows, header_parse_nrows},
+  {header_fields_.byteorder, header_parse_byteorder},
+  {header_fields_.nrows,     header_parse_nrows    },
 };
+const size_t num_header_procs =
+  sizeof(header_proc_map_) / sizeof(header_proc_map_[0]);
 
 const header *const header_parse(const char *data) {
   header *new_header = (header *)malloc(sizeof(header));
@@ -90,7 +98,7 @@ const header *const header_parse(const char *data) {
     }
 
     while (cur) {
-      if (!isspace(*cur)) {
+      if (*cur && !isspace(*cur)) {
         cur++;
         continue;
       }
@@ -100,13 +108,11 @@ const header *const header_parse(const char *data) {
       break;
     }
 
-    char *str_key = slice_to_string(&key);
-    char *str_value = slice_to_string(&value);
-
-    printf("%s: %s\n", str_key, str_value);
-
-    free(str_key);
-    free(str_value);
+    for (size_t i = 0; i < num_header_procs; i++) {
+      if (slice_cmp_str(&key, header_proc_map_[i].key) == 0) {
+        header_proc_map_[i].parse(&value, new_header);
+      }
+    }
 
     nl_tok = strtok(NULL, "\n");
   }
@@ -114,5 +120,36 @@ const header *const header_parse(const char *data) {
   return new_header;
 }
 
-bool header_parse_nrows(header *header) {
+uint32_t header_parse_uint32(slice *data) {
+  return strtoul((const char *)data->start, NULL, 10);
+}
+
+int32_t header_parse_int32(slice *data) {
+  return strtol((const char *)data->start, NULL, 10);
+}
+
+double header_parse_double(slice *data) {
+  return strtod((const char *)data->start, NULL);
+}
+
+bool header_parse_nrows(slice *data, header *header) {
+  header->nrows = header_parse_uint32(data);
+
+  fprintf(stderr, "Nrows: %u\n", header->nrows);
+
+  return true;
+}
+
+bool header_parse_byteorder(slice *data, header *header) {
+  bool status = false;
+
+  if (slice_cmp_str(data, "I") == 0) {
+    header->byteorder = little_endian;
+    status = true;
+  } else if (slice_cmp_str(data, "M") == 0) {
+    header->byteorder = big_endian;
+    status = true;
+  }
+
+  return status;
 }
