@@ -11,3 +11,6 @@ char *slice_to_string(const slice *const slice);
 
 long slice_cmp(const slice *s1, const slice *s2);
 long slice_cmp_str(const slice *s, const char *str);
+
+slice *slice_toupper(slice *s);
+slice *slice_tolower(slice *s);

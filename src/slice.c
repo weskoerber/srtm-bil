@@ -1,5 +1,6 @@
 #include "slice.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,4 +31,20 @@ long slice_cmp_str(const slice *s, const char *str) {
     ;
 
   return *(unsigned char *)(s->start + i) - *(unsigned char *)(str + i);
+}
+
+slice *slice_toupper(slice *s) {
+  for (size_t i = 0; i < s->length; i++) {
+    *(char *)s->start = toupper(*(char *)s->start);
+  }
+
+  return s;
+}
+
+slice *slice_tolower(slice *s) {
+  for (size_t i = 0; i < s->length; i++) {
+    *(char *)s->start = tolower(*(char *)s->start);
+  }
+
+  return s;
 }
