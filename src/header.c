@@ -76,6 +76,10 @@ bool header_parse_bandgapbytes(const slice *data, header *header);
 bool header_parse_pixeltype(const slice *data, header *header);
 bool header_parse_nodata(const slice *data, header *header);
 
+char *trim_key(slice *data, char *str);
+char *trim_value(slice *data, char *str);
+void parse_line(slice *key, slice *value, char *line);
+
 const header_proc_map header_proc_map_[] = {
   {header_str_nrows,         header_parse_nrows        },
   {header_str_ncols,         header_parse_ncols        },
@@ -106,38 +110,8 @@ const header *const header_parse(const char *data) {
   slice key = {0}, value = {0};
   while (nl_tok != nullptr) {
     cur = nl_tok;
-    key.start = cur;
-    while (cur) {
-      if (!isspace(*cur)) {
-        cur++;
-        continue;
-      }
 
-      key.end = cur;
-      key.length = key.end - key.start;
-      break;
-    }
-
-    while (cur) {
-      if (isspace(*cur)) {
-        cur++;
-        continue;
-      }
-
-      value.start = cur;
-      break;
-    }
-
-    while (cur) {
-      if (*cur && !isspace(*cur)) {
-        cur++;
-        continue;
-      }
-
-      value.end = cur;
-      value.length = value.end - value.start;
-      break;
-    }
+    parse_line(&key, &value, cur);
 
     for (size_t i = 0; i < num_header_procs; i++) {
       if (slice_cmp_str(&key, header_proc_map_[i].key) == 0) {
@@ -304,4 +278,51 @@ bool header_parse_nodata(const slice *data, header *header) {
   header->nodata = header_parse_int32(data);
 
   return true;
+}
+
+char *trim_key(slice *data, char *str) {
+  data->start = str;
+
+  while (str) {
+    if (!isspace(*str)) {
+      str++;
+      continue;
+    }
+
+    data->end = str;
+    data->length = data->end - data->start;
+    break;
+  }
+
+  return str;
+}
+
+char *trim_value(slice *data, char *str) {
+  while (str) {
+    if (isspace(*str)) {
+      str++;
+      continue;
+    }
+
+    data->start = str;
+    break;
+  }
+
+  while (str) {
+    if (*str && !isspace(*str)) {
+      str++;
+      continue;
+    }
+
+    data->end = str;
+    data->length = data->end - data->start;
+    break;
+  }
+
+  return str;
+}
+
+void parse_line(slice *key, slice *value, char *line) {
+  line = trim_key(key, line);
+  line = trim_value(value, line);
 }
