@@ -7,6 +7,30 @@
 #include <stdlib.h>
 #include <string.h>
 
+const char *resolution_str[] = {
+  [b1] = "1-bit",
+  [b4] = "4-bit",
+  [b8] = "8-bit",
+  [b16] = "16-bit",
+  [b32] = "32-bit",
+};
+
+const char *byteorder_str[] = {
+  [little_endian] = "little_endian",
+  [big_endian] = "big_endian",
+};
+
+const char *layout_str[] = {
+  [bil] = "bil",
+  [bip] = "bip",
+  [bsq] = "bsq",
+};
+
+const char *pixeltype_str[] = {
+  [signedint] = "signedint",
+  [unsignedint] = "unsignedint",
+};
+
 typedef struct {
   const char *const key;
   bool (*const parse)(const slice *, header *const);

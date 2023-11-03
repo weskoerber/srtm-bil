@@ -25,9 +25,9 @@ int main() {
   fprintf(stderr, "nrows: %u\n", header->nrows);
   fprintf(stderr, "ncols: %u\n", header->ncols);
   fprintf(stderr, "nbands: %u\n", header->nbands);
-  fprintf(stderr, "nbits: %u\n", header->nbits);
-  fprintf(stderr, "byteorder: %u\n", header->byteorder);
-  fprintf(stderr, "layout: %u\n", header->layout);
+  fprintf(stderr, "nbits: %s\n", resolution_str[header->nbits]);
+  fprintf(stderr, "byteorder: %s\n", byteorder_str[header->byteorder]);
+  fprintf(stderr, "layout: %s\n", layout_str[header->layout]);
   fprintf(stderr, "skipbytes: %u\n", header->skipbytes);
   fprintf(stderr, "ulxmap: %.18f\n", header->ulxmap);
   fprintf(stderr, "ulymap: %.18f\n", header->ulymap);
@@ -36,7 +36,7 @@ int main() {
   fprintf(stderr, "bandrowbytes: %u\n", header->bandrowbytes);
   fprintf(stderr, "totalrowbytes: %u\n", header->totalrowbytes);
   fprintf(stderr, "bandgapbytes: %u\n", header->bandgapbytes);
-  fprintf(stderr, "pixeltype: %u\n", header->pixeltype);
+  fprintf(stderr, "pixeltype: %s\n", pixeltype_str[header->pixeltype]);
   fprintf(stderr, "nodata: %d\n", header->nodata);
 
   fclose(hdr);

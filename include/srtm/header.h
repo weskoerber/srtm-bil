@@ -47,3 +47,8 @@ typedef struct {
 } header;
 
 const header *const header_parse(const char *data);
+
+extern const char *resolution_str[];
+extern const char *byteorder_str[];
+extern const char *layout_str[];
+extern const char *pixeltype_str[];
