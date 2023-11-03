@@ -100,9 +100,26 @@ const size_t num_header_procs =
   sizeof(header_proc_map_) / sizeof(header_proc_map_[0]);
 
 bool header_parse_file(const char *filename, header *header) {
-  FILE *hdr = fopen(filename, "rb");
+  char *real_filename = NULL;
+  char *filename_cpy = strdup(filename);
+
+  if (filename_cpy[0] == '~') {
+    filename_cpy[0] = '/';
+    char *home = getenv("HOME");
+    if (home == NULL) {
+      fprintf(stderr, "Unable to retrieve 'HOME' environment variable\n");
+      return false;
+    }
+    real_filename = malloc(strlen(home) + strlen(filename_cpy) + 2);
+    strncpy(real_filename, home, strlen(home));
+    strncpy(real_filename + strlen(home), filename_cpy, strlen(filename_cpy));
+  } else {
+    real_filename = filename_cpy;
+  }
+
+  FILE *hdr = fopen(real_filename, "rb");
   if (!hdr) {
-    printf("fopen fail\n");
+    printf("fopen: failed opening file: %s\n", real_filename);
     return false;
   }
 
@@ -115,7 +132,7 @@ bool header_parse_file(const char *filename, header *header) {
     fread(buf, size, 1, hdr);
   }
 
-  header = header_parse(buf);
+  *header = *header_parse(buf);
 
   fclose(hdr);
   free(buf);
