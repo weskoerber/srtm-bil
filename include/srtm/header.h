@@ -4,11 +4,11 @@
 #include <stdint.h>
 
 typedef enum {
-  b1,
-  b4,
-  b8,
-  b16,
-  b32,
+  b1 = 1,
+  b4 = 4,
+  b8 = 8,
+  b16 = 16,
+  b32 = 32,
 } resolution;
 
 typedef enum {

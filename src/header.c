@@ -9,7 +9,7 @@
 
 typedef struct {
   const char *const key;
-  bool (*const parse)(slice *, header *const);
+  bool (*const parse)(const slice *, header *const);
 } header_proc_map;
 
 typedef struct {
@@ -52,16 +52,44 @@ const header_fields header_fields_ = {
 
 const header *const header_parse(const char *data);
 
-uint32_t header_parse_uint32(slice *data);
-int32_t header_parse_int32(slice *data);
-double header_parse_double(slice *data);
+uint32_t header_parse_uint32(const slice *data);
+int32_t header_parse_int32(const slice *data);
+double header_parse_double(const slice *data);
 
-bool header_parse_byteorder(slice *data, header *header);
-bool header_parse_nrows(slice *data, header *header);
+bool header_parse_nrows(const slice *data, header *header);
+bool header_parse_ncols(const slice *data, header *header);
+bool header_parse_nbands(const slice *data, header *header);
+bool header_parse_nbits(const slice *data, header *header);
+bool header_parse_byteorder(const slice *data, header *header);
+bool header_parse_layout(const slice *data, header *header);
+bool header_parse_skipbytes(const slice *data, header *header);
+bool header_parse_ulxmap(const slice *data, header *header);
+bool header_parse_ulymap(const slice *data, header *header);
+bool header_parse_xdim(const slice *data, header *header);
+bool header_parse_ydim(const slice *data, header *header);
+bool header_parse_bandrowbytes(const slice *data, header *header);
+bool header_parse_totalrowbytes(const slice *data, header *header);
+bool header_parse_bandgapbytes(const slice *data, header *header);
+bool header_parse_pixeltype(const slice *data, header *header);
+bool header_parse_nodata(const slice *data, header *header);
 
 const header_proc_map header_proc_map_[] = {
-  {header_fields_.byteorder, header_parse_byteorder},
-  {header_fields_.nrows,     header_parse_nrows    },
+  {header_fields_.nrows,         header_parse_nrows        },
+  {header_fields_.ncols,         header_parse_ncols        },
+  {header_fields_.nbands,        header_parse_nbands       },
+  {header_fields_.nbits,         header_parse_nbits        },
+  {header_fields_.byteorder,     header_parse_byteorder    },
+  {header_fields_.layout,        header_parse_layout       },
+  {header_fields_.skipbytes,     header_parse_skipbytes    },
+  {header_fields_.ulxmap,        header_parse_ulxmap       },
+  {header_fields_.ulymap,        header_parse_ulymap       },
+  {header_fields_.xdim,          header_parse_xdim         },
+  {header_fields_.ydim,          header_parse_ydim         },
+  {header_fields_.bandrowbytes,  header_parse_bandrowbytes },
+  {header_fields_.totalrowbytes, header_parse_totalrowbytes},
+  {header_fields_.bandgapbytes,  header_parse_bandgapbytes },
+  {header_fields_.pixeltype,     header_parse_pixeltype    },
+  {header_fields_.nodata,        header_parse_nodata       },
 };
 const size_t num_header_procs =
   sizeof(header_proc_map_) / sizeof(header_proc_map_[0]);
@@ -117,30 +145,66 @@ const header *const header_parse(const char *data) {
     nl_tok = strtok(NULL, "\n");
   }
 
+  slice_toupper(&key);
+  slice_toupper(&value);
+
   return new_header;
 }
 
-uint32_t header_parse_uint32(slice *data) {
+uint32_t header_parse_uint32(const slice *data) {
   return strtoul((const char *)data->start, NULL, 10);
 }
 
-int32_t header_parse_int32(slice *data) {
+int32_t header_parse_int32(const slice *data) {
   return strtol((const char *)data->start, NULL, 10);
 }
 
-double header_parse_double(slice *data) {
+double header_parse_double(const slice *data) {
   return strtod((const char *)data->start, NULL);
 }
 
-bool header_parse_nrows(slice *data, header *header) {
+bool header_parse_nrows(const slice *data, header *header) {
   header->nrows = header_parse_uint32(data);
-
-  fprintf(stderr, "Nrows: %u\n", header->nrows);
 
   return true;
 }
 
-bool header_parse_byteorder(slice *data, header *header) {
+bool header_parse_ncols(const slice *data, header *header) {
+  header->ncols = header_parse_uint32(data);
+
+  return true;
+}
+
+bool header_parse_nbands(const slice *data, header *header) {
+  header->nbands = header_parse_uint32(data);
+
+  return true;
+}
+
+bool header_parse_nbits(const slice *data, header *header) {
+  bool status = false;
+
+  if (slice_cmp_str(data, "1")) {
+    header->nbits = b1;
+    status = true;
+  } else if (slice_cmp_str(data, "4")) {
+    header->nbits = b4;
+    status = true;
+  } else if (slice_cmp_str(data, "8")) {
+    header->nbits = b8;
+    status = true;
+  } else if (slice_cmp_str(data, "16")) {
+    header->nbits = b16;
+    status = true;
+  } else if (slice_cmp_str(data, "32")) {
+    header->nbits = b32;
+    status = true;
+  }
+
+  return status;
+}
+
+bool header_parse_byteorder(const slice *data, header *header) {
   bool status = false;
 
   if (slice_cmp_str(data, "I") == 0) {
@@ -152,4 +216,89 @@ bool header_parse_byteorder(slice *data, header *header) {
   }
 
   return status;
+}
+
+bool header_parse_layout(const slice *data, header *header) {
+  bool status = false;
+
+  if (slice_cmp_str(data, "BIL")) {
+    header->layout = bil;
+    status = true;
+  } else if (slice_cmp_str(data, "BIP")) {
+    header->layout = bip;
+    status = true;
+  } else if (slice_cmp_str(data, "BSQ")) {
+    header->layout = bsq;
+    status = true;
+  }
+
+  return status;
+}
+
+bool header_parse_skipbytes(const slice *data, header *header) {
+  header->skipbytes = header_parse_uint32(data);
+
+  return true;
+}
+
+bool header_parse_ulxmap(const slice *data, header *header) {
+  header->ulxmap = header_parse_double(data);
+
+  return true;
+}
+
+bool header_parse_ulymap(const slice *data, header *header) {
+  header->ulymap = header_parse_double(data);
+
+  return true;
+}
+
+bool header_parse_xdim(const slice *data, header *header) {
+  header->xdim = header_parse_double(data);
+
+  return true;
+}
+
+bool header_parse_ydim(const slice *data, header *header) {
+  header->ydim = header_parse_double(data);
+
+  return true;
+}
+
+bool header_parse_bandrowbytes(const slice *data, header *header) {
+  header->bandrowbytes = header_parse_uint32(data);
+
+  return true;
+}
+
+bool header_parse_totalrowbytes(const slice *data, header *header) {
+  header->totalrowbytes = header_parse_uint32(data);
+
+  return true;
+}
+
+bool header_parse_bandgapbytes(const slice *data, header *header) {
+  header->bandgapbytes = header_parse_uint32(data);
+
+  return true;
+}
+
+bool header_parse_pixeltype(const slice *data, header *header) {
+  bool status = false;
+
+  if (slice_cmp_str(data, "SIGNEDINT")) {
+    header->pixeltype = signedint;
+    status = true;
+  } else if (slice_cmp_str(data, "UNSIGNEDINT")) {
+    header->pixeltype = unsignedint;
+    status = true;
+  }
+
+  return status;
+}
+
+bool header_parse_nodata(const slice *data, header *header) {
+  header->nodata = header_parse_int32(data);
+
+  return true;
 }
