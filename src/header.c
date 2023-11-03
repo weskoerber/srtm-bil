@@ -101,7 +101,31 @@ const header_proc_map header_proc_map_[] = {
 const size_t num_header_procs =
   sizeof(header_proc_map_) / sizeof(header_proc_map_[0]);
 
-const header *const header_parse(const char *data) {
+bool header_parse_file(const char *filename, header *header) {
+  FILE *hdr = fopen(filename, "rb");
+  if (!hdr) {
+    printf("fopen fail\n");
+    return false;
+  }
+
+  fseek(hdr, 0, SEEK_END);
+  long size = ftell(hdr);
+  char *buf = (char *)malloc(size);
+  rewind(hdr); // fseek(hdr, 0, SEEK_SET);
+
+  while (!feof(hdr)) {
+    fread(buf, size, 1, hdr);
+  }
+
+  header = header_parse(buf);
+
+  fclose(hdr);
+  free(buf);
+
+  return header != NULL;
+}
+
+header *header_parse(const char *data) {
   header *new_header = (header *)malloc(sizeof(header));
   char *tmp_data = (char *)malloc(strlen(data) + 1);
   memcpy(tmp_data, data, strlen(data));

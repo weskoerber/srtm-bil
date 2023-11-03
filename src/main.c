@@ -5,40 +5,23 @@
 #include <stdlib.h>
 
 int main() {
-  FILE *hdr = fopen("data/n32_w116_1arc_v3.hdr", "rb");
-  if (!hdr) {
-    printf("fopen fail\n");
-    return 1;
-  }
+  header header;
+  header_parse_file("data/n32_w116_1arc_v3.hdr", &header);
 
-  fseek(hdr, 0, SEEK_END);
-  long size = ftell(hdr);
-  char *buf = (char *)malloc(size);
-  rewind(hdr); // fseek(hdr, 0, SEEK_SET);
-
-  while (!feof(hdr)) {
-    fread(buf, size, 1, hdr);
-  }
-
-  const header *header = header_parse(buf);
-
-  fprintf(stderr, "nrows: %u\n", header->nrows);
-  fprintf(stderr, "ncols: %u\n", header->ncols);
-  fprintf(stderr, "nbands: %u\n", header->nbands);
-  fprintf(stderr, "nbits: %s\n", resolution_str[header->nbits]);
-  fprintf(stderr, "byteorder: %s\n", byteorder_str[header->byteorder]);
-  fprintf(stderr, "layout: %s\n", layout_str[header->layout]);
-  fprintf(stderr, "skipbytes: %u\n", header->skipbytes);
-  fprintf(stderr, "ulxmap: %.18f\n", header->ulxmap);
-  fprintf(stderr, "ulymap: %.18f\n", header->ulymap);
-  fprintf(stderr, "xdim: %.18f\n", header->xdim);
-  fprintf(stderr, "ydim: %.18f\n", header->ydim);
-  fprintf(stderr, "bandrowbytes: %u\n", header->bandrowbytes);
-  fprintf(stderr, "totalrowbytes: %u\n", header->totalrowbytes);
-  fprintf(stderr, "bandgapbytes: %u\n", header->bandgapbytes);
-  fprintf(stderr, "pixeltype: %s\n", pixeltype_str[header->pixeltype]);
-  fprintf(stderr, "nodata: %d\n", header->nodata);
-
-  fclose(hdr);
-  free(buf);
+  fprintf(stderr, "nrows: %u\n", header.nrows);
+  fprintf(stderr, "ncols: %u\n", header.ncols);
+  fprintf(stderr, "nbands: %u\n", header.nbands);
+  fprintf(stderr, "nbits: %s\n", resolution_str[header.nbits]);
+  fprintf(stderr, "byteorder: %s\n", byteorder_str[header.byteorder]);
+  fprintf(stderr, "layout: %s\n", layout_str[header.layout]);
+  fprintf(stderr, "skipbytes: %u\n", header.skipbytes);
+  fprintf(stderr, "ulxmap: %.18f\n", header.ulxmap);
+  fprintf(stderr, "ulymap: %.18f\n", header.ulymap);
+  fprintf(stderr, "xdim: %.18f\n", header.xdim);
+  fprintf(stderr, "ydim: %.18f\n", header.ydim);
+  fprintf(stderr, "bandrowbytes: %u\n", header.bandrowbytes);
+  fprintf(stderr, "totalrowbytes: %u\n", header.totalrowbytes);
+  fprintf(stderr, "bandgapbytes: %u\n", header.bandgapbytes);
+  fprintf(stderr, "pixeltype: %s\n", pixeltype_str[header.pixeltype]);
+  fprintf(stderr, "nodata: %d\n", header.nodata);
 }

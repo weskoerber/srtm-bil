@@ -46,7 +46,8 @@ typedef struct {
   int32_t nodata;
 } header;
 
-const header *const header_parse(const char *data);
+header *header_parse(const char *data);
+bool header_parse_file(const char *filename, header *header);
 
 extern const char *resolution_str[];
 extern const char *byteorder_str[];
