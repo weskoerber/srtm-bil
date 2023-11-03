@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *slice_to_string(const slice *const slice) {
+char *slice_to_string(const slice *slice) {
   char *str = (char *)malloc(slice->length + 1);
 
   memcpy(str, slice->start, slice->length);

@@ -49,11 +49,9 @@ const char header_str_pixeltype[] = "PIXELTYPE";
 const char header_str_nodata[] = "NODATA";
 
 typedef struct {
-  const char *const key;
-  bool (*const parse)(const slice *, header *const);
+  const char *key;
+  bool (*parse)(const slice *, header *);
 } header_proc_map;
-
-const header *const header_parse(const char *data);
 
 uint32_t header_parse_uint32(const slice *data);
 int32_t header_parse_int32(const slice *data);
